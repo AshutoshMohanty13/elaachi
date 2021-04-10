@@ -3,15 +3,18 @@ const Address = require('../model/address');
 const mongoose = require('mongoose');
 
 module.exports = {
-    findUser: async function ({ id }) {
-        const user = User.findOne({ id })
+    findUser: async function ({ _id }) {
+        const user = await User.findById({
+            _id
+        })
+        // console.log(user)
         if (!user) {
             const error = new Error('User not found')
             error.code = 401;
             throw error;
         }
-
-        return {user}
+        await user.populate('add').execPopulate();
+        return { ...user._doc, _id: user._id.toString(), address: user.add[0]._doc }
     },
 
     createUser: async function ({ userInput }, req) {
@@ -23,7 +26,7 @@ module.exports = {
         const user = new User({
             emailId: userInput.emailId,
             firstName: userInput.firstName,
-            lastName:userInput.lastName
+            lastName: userInput.lastName
         });
 
         console.log(user);
@@ -31,7 +34,7 @@ module.exports = {
         return {
             ...createdUser._doc, _id: createdUser._id.toString(),
         };
-      
+
     },
     createAddress: async function ({ addressInput }, req) {
         const user = await User.findById({ _id: mongoose.Types.ObjectId(addressInput.userId) });
@@ -48,13 +51,11 @@ module.exports = {
             userId: user._id
         });
         const createdAddress = await address.save();
-        user.address.push(createdAddress);
-        await user.save();
 
         return {
             ...createdAddress._doc, _id: createdAddress._id.toString(),
         };
-      
+
     }
 
 }

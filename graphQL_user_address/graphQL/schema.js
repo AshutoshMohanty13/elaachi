@@ -2,7 +2,7 @@ const { buildSchema } = require('graphql');
 
 module.exports = buildSchema(`
     type Address{
-        _id: String!
+        _id: ID!
         address:String!
         city:String!
         zipcode:Int!
@@ -10,7 +10,7 @@ module.exports = buildSchema(`
     }
 
     type User{
-        _id: String!
+        _id: ID!
         emailId:String!
         firstName:String!
         lastName:String!
@@ -34,6 +34,7 @@ module.exports = buildSchema(`
     type RootQuery{
         findUser(_id:String!):User!
         user:User!
+        address:Address!
     }
     type RootMutation{
         createUser(userInput:UserInputData):User!

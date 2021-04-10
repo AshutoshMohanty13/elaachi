@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Address = require('../model/address')
 
 const userSchema = new mongoose.Schema({
     emailId: {
@@ -18,11 +19,12 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true
 
-    },
-    address: [{
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-    }]
+    }
+})
+userSchema.virtual('add', {
+    ref: Address,
+    localField: '_id',
+    foreignField: 'userId'
 })
 
 const User = mongoose.model('User', userSchema);

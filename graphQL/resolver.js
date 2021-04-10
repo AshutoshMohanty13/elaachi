@@ -1,0 +1,60 @@
+const User = require('../model/user');
+const Address = require('../model/address');
+const mongoose = require('mongoose');
+
+module.exports = {
+    findUser: async function ({ id }) {
+        const user = User.findOne({ id })
+        if (!user) {
+            const error = new Error('User not found')
+            error.code = 401;
+            throw error;
+        }
+
+        return {user}
+    },
+
+    createUser: async function ({ userInput }, req) {
+        const existingUser = await User.findOne({ email: userInput.email });
+        if (existingUser) {
+            const error = new Error('User exists already!');
+            throw error;
+        }
+        const user = new User({
+            emailId: userInput.emailId,
+            firstName: userInput.firstName,
+            lastName:userInput.lastName
+        });
+
+        console.log(user);
+        const createdUser = await user.save();
+        return {
+            ...createdUser._doc, _id: createdUser._id.toString(),
+        };
+      
+    },
+    createAddress: async function ({ addressInput }, req) {
+        const user = await User.findById({ _id: mongoose.Types.ObjectId(addressInput.userId) });
+        console.log(addressInput, user);
+        if (!user) {
+            const error = new Error('User Not Found');
+            throw error;
+        }
+        const address = new Address({
+            address: addressInput.address,
+            city: addressInput.city,
+            zipcode: addressInput.zipcode,
+            country: addressInput.country,
+            userId: user._id
+        });
+        const createdAddress = await address.save();
+        user.address.push(createdAddress);
+        await user.save();
+
+        return {
+            ...createdAddress._doc, _id: createdAddress._id.toString(),
+        };
+      
+    }
+
+}
